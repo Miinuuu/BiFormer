@@ -308,9 +308,9 @@ class BCAblock_Anchor(nn.Module):
         kv0 = self.kv(x0).reshape(B_,h,w,2,self.num_heads, C//self.num_heads)
         kv1 = self.kv(x1).reshape(B_,h,w,2,self.num_heads, C//self.num_heads)
         
-        qt = rearrange(qt, 'b h w nh hc -> (b nh) hc h w')
-        k0,v0 = rearrange(kv0,'b h w kv nh hc -> kv (b nh) hc h w')
-        k1,v1 = rearrange(kv1,'b h w kv nh hc -> kv (b nh) hc h w')
+        qt      = rearrange(qt, 'b h w nh hc -> (b nh) hc h w')
+        k0,v0   = rearrange(kv0,'b h w kv nh hc -> kv (b nh) hc h w')
+        k1,v1   = rearrange(kv1,'b h w kv nh hc -> kv (b nh) hc h w')
         qt,k0,v0,k1,v1 = map(lambda t: t.contiguous(), (qt,k0,v0,k1,v1))
 
         xb, xf = self.biattn(qt,k0,k1,v0,v1) # B, C, h, w
@@ -378,8 +378,8 @@ class BCALayer(nn.Module):
     def forward(self, x0, x1, xt, x_size):
         H, W = x_size
         x = xt
-        x = self.Bblock(x0,x1,x,x_size)
-        for blk in self.Sblocks:
+        x = self.Bblock(x0,x1,x,x_size) # bilatertal
+        for blk in self.Sblocks: # swin v2 
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x, x_size)
             else:
